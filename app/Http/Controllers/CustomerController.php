@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\Schedules;
 use App\Models\Customer_schedule;
 use App\Models\Inquire;
+use App\Models\Approval;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -19,9 +20,12 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
         $customerinfo = Customer::where('user_id', $user->id)->first();
-        $properties = Property::All();
-        //dd($customerinfo);
-
+        //$properties = Property::All();
+        $properties = Property::join('approvals', 'properties.id', '=', 'approvals.property_id')
+        ->where('approvals.status_of_approval', 'approved')
+        ->where('properties.status','available')
+        ->select('properties.*') 
+        ->get();
         return view('customer.index', compact('properties','customerinfo'));
     }
 
@@ -87,10 +91,11 @@ class CustomerController extends Controller
     $customer = Customer::where('user_id', $user->id)->first();
     
     $inquiries = Inquire::where('customer_id', $customer->id)
-        ->join('properties', 'inquiries.property_id', '=', 'properties.id')
-        ->join('agents', 'properties.agent_id', '=', 'agents.id')
-        ->select('inquiries.*', 'properties.address', 'agents.name as agent_name', 'agents.phone_number as agent_phone_number')
-        ->get();
+    ->join('properties', 'inquiries.property_id', '=', 'properties.id')
+    ->join('agents', 'properties.agent_id', '=', 'agents.id')
+    ->where('properties.status', 'available') // Add this condition
+    ->select('inquiries.*', 'properties.address', 'agents.name as agent_name', 'agents.phone_number as agent_phone_number')
+    ->get();
 
     return view('customer.inquire', compact('inquiries', 'customer'));
     }
@@ -137,7 +142,7 @@ class CustomerController extends Controller
         ->join('agents', 'properties.agent_id', '=', 'agents.id')
         ->join('customers', 'solds.customer_id', '=', 'customers.id')
         ->where('customers.id', $customer->id) // Assuming $customer is defined somewhere in your code
-        ->select('solds.property_id', 'properties.price', 'agents.name as agent_name', 'agents.phone_number as agent_phone_number')
+        ->select('solds.property_id', 'properties.price', 'agents.name as agent_name', 'agents.phone_number as agent_phone_number','solds.payment_method')
         ->get();
 
     return view('customer.transaction', compact('solds'));

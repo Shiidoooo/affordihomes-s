@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Agent;
 use App\Models\Property;
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\Schedules;
 use App\Models\Solds;
 use App\Models\Customer;
 use App\Models\Customer_schedule;
+use App\Models\Approval;
+
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use View;
@@ -26,7 +30,11 @@ class PropertyController extends Controller
 
 
     public function homepopulate(){
-        $properties = Property::All();
+        $properties = Property::join('approvals', 'properties.id', '=', 'approvals.property_id')
+        ->where('approvals.status_of_approval', 'approved')
+        ->where('properties.status','available')
+        ->select('properties.*') 
+        ->get();
 
         foreach ($properties as $property) {
             $agentinfo = Agent::where('id', $property->agent_id)->first();
@@ -74,7 +82,6 @@ class PropertyController extends Controller
         $id = $request->query('id');
         $property = Property::where('id', $id)->first();
         $agentinfo = Agent::where('id', $property->agent_id)->first();
-
         $schedules = Schedules::where('property_id', $id)
     ->whereNotExists(function ($query) {
         $query->select(DB::raw(1))
@@ -185,13 +192,6 @@ class PropertyController extends Controller
         return redirect()->route('agent.dashboard');
     }
 
-
-
-
-
-
-
-
     public function search(Request $request)
 {
     // Retrieve the search criteria from the form
@@ -199,6 +199,7 @@ class PropertyController extends Controller
     $bedrooms = $request->input('bedrooms');
     $location = $request->input('location');
     $parking = $request->input('parking');
+    $status = $request->input('status');
 
     // Query the properties based on the search criteria
     $properties = Property::query();
@@ -220,12 +221,54 @@ class PropertyController extends Controller
         $properties->where('parking', $parking);
     }
 
+    if ($status) {
+        $properties->where('status', $status);
+    }
+
     // Get the search results
     $properties = $properties->get();
 
     // Pass the search results to the view
     return view('home.home', compact('properties'));
 }
+
+
+public function approve($property_id)
+    {
+       
+        $existingApproval = Approval::where('property_id', $property_id)->first();
+        if ($existingApproval) {
+        return redirect()->route('admin.dashboard')->with('error', 'This property has already been approved.');
+        }
+
+        $user = auth()->user();
+        $admin = Admin::where('user_id', $user->id)->first();
+        $approval = new Approval();
+        $approval->property_id = $property_id;
+        $approval->admin_id = $admin->id;
+        $approval->status_of_approval = 'approved';
+        $approval->save();
+
+        return redirect()->route('admin.dashboard')->with('success', 'This property already has a status.');
+    }
+
+    public function reject($property_id)
+    {  
+        $existingApproval = Approval::where('property_id', $property_id)->first();
+        if ($existingApproval) {
+        return redirect()->route('admin.dashboard')->with('error', 'This property already has a status.');
+        }
+       
+        $user = auth()->user();
+        $admin = Admin::where('user_id', $user->id)->first();
+        $approval = new Approval();
+        $approval->property_id = $property_id;
+        $approval->admin_id = $admin->id;
+        $approval->status_of_approval = 'rejected';
+        $approval->save();
+
+        return redirect()->route('admin.dashboard')->with('success', 'Property has been approved successfully.');
+    }
 
 
 }

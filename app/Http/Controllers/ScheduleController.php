@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Property;
 use App\Models\Schedules;
 use App\Models\Customer_schedule;
+use App\Models\Approval;
 class ScheduleController extends Controller
 {
     public function CustomerScheduleStore($id)

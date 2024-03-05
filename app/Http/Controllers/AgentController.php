@@ -9,6 +9,7 @@ use App\Models\Property;
 use App\Models\Schedules;
 use App\Models\Customer_schedule;
 use App\Models\Inquire;
+use App\Models\Approval;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +29,6 @@ class AgentController extends Controller
         ->leftJoin('agents', 'schedules.agent_id', '=', 'agents.id')
         ->leftJoin('properties', 'schedules.property_id', '=', 'properties.id')
         ->where('agents.id', $agent->id)
-        ->where('properties.status', 'available')
         ->select('schedules.*', 'customers.name', 'customers.phone_number')
         ->orderBy('schedules.property_id', 'asc')
         ->get();
@@ -45,7 +45,7 @@ class AgentController extends Controller
         ->join('properties', 'solds.property_id', '=', 'properties.id')
         ->join('customers', 'solds.customer_id', '=', 'customers.id')
         ->where('properties.agent_id', $agent->id)
-        ->select('solds.property_id','properties.price','customers.name as customer_name', 'customers.phone_number as customer_phone_number')
+        ->select('solds.property_id','properties.price','customers.name as customer_name', 'customers.phone_number as customer_phone_number','solds.payment_method')
         ->get();
 
         return view('agent.transaction',compact('solds'));
@@ -57,7 +57,10 @@ class AgentController extends Controller
         if($user != NULL){
             $agentinfo = Agent::where('user_id', $user->id)->first();
         }
-        $properties = Property::where('agent_id',$agentinfo->id)->get();
+        $properties = Property::where('agent_id', $agentinfo->id)
+        ->leftJoin('approvals', 'properties.id', '=', 'approvals.property_id')
+        ->select('properties.*', 'approvals.status_of_approval')
+        ->get();
         return view('agent.index',compact('properties','agentinfo'));
     }
 

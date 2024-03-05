@@ -85,8 +85,10 @@
           <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $property->description }}</h5>
           <!--DESCRIPTION-->
           <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+            Property Type:<b>{{ $property->id }}</b><br>
             Property Type: {{ $property->property_type }}<br>
-            Address: {{ $property->address }}
+            Address: {{ $property->address }}<br>
+            Status: <b>{{ $property->status }}</b>
           </p>
       </div>
     </a>
