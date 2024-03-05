@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Approval extends Model
 {
     use HasFactory;
+    public $timestamps = false;
     protected $fillable = [
         'id',
         'admin_id',

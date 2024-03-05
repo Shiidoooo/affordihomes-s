@@ -49,6 +49,10 @@ Route::get('/customer', [CustomerController::class, 'index'])->name('customer.ho
 
 // Admin
 Route::get('/admin/dashboard', [Admincontroller::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/profile', [Admincontroller::class, 'adminprofile'])->name('admin.profile');
+Route::post('/admin/update', [Admincontroller::class, 'update'])->name('admin.update');
+Route::get('/admin/agents', [Admincontroller::class, 'agents'])->name('admin.agents');
+Route::get('/admin/properties', [Admincontroller::class, 'properties'])->name('admin.properties');
 
 // Customer
 Route::get('/customer/dashboard', [CustomerController::class, 'index'])->name('customer.dashboard');
@@ -72,6 +76,11 @@ Route::post('/property/store', [PropertyController::class, 'store'])->name('prop
 Route::get('/property/{id}/edit', [PropertyController::class, 'edit'])->name('property.edit');
 Route::post('/property/{id}/update', [PropertyController::class, 'update'])->name('property.update');
 Route::get('/property/{id}/delete', [PropertyController::class, 'delete'])->name('property.delete');
+
+///Approve and Reject Property 
+Route::get('/approve/{property_id}',[PropertyController::class,'approve'] )->name('property.approve');
+Route::get('/reject/{property_id}', [PropertyController::class,'reject'])->name('property.reject');
+
 
 Route::get('/property/info', [PropertyController::class, 'propertyinfo'])->name('property.info');
 

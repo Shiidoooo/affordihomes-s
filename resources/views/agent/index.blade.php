@@ -61,7 +61,7 @@
                             <span class="sr-only">Delete</span>
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Status
+                            Approval Status
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Property Type
@@ -109,7 +109,11 @@
                             <a href="#" onclick="confirmDelete('{{ route('property.delete', $property->id) }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Delete</a>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            pending
+                            @if ($property->status_of_approval)
+                                {{ $property->status_of_approval }}
+                            @else
+                                Pending
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             {{ $property->property_type }}
